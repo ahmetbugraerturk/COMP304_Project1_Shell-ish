@@ -307,22 +307,25 @@ int prompt(struct command_t *command) {
 }
 
 char *find_path(char *command){
-	char *paths = getenv("PATH"); // from GEMINI
+	char *paths = strdup(getenv("PATH")); // from GEMINI
 	char *path = strtok(paths, ":");
 
 	while (path!=NULL){
 		char *curr_path = malloc(sizeof(path)+sizeof(command)+2);
+		if (curr_path==NULL) break;
 		strcpy(curr_path, path);
 		strcat(curr_path, "/");
 		strcat(curr_path, command);
 		if (access(curr_path, F_OK)==0) { // from GEMINI
 			// printf("%s\n", curr_path);
+			free(paths);
 			return curr_path;
 		}
 		free(curr_path);
 		path = strtok(NULL, ":");
 	}
-
+	free(paths);
+	return NULL;
 }
 
 int process_command(struct command_t *command) {
@@ -356,7 +359,11 @@ int process_command(struct command_t *command) {
     // TODO: do your own exec with path resolving using execv()
     // do so by replacing the execvp call below
 
-    execv(find_path(command->name), command->args);
+    char *path = find_path(command->name);
+    if (path!=NULL){
+	execv(path, command->args);
+    }
+    free(path);
     
     //execvp(command->name, command->args); // exec+args+path
 
