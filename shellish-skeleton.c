@@ -306,6 +306,25 @@ int prompt(struct command_t *command) {
   return SUCCESS;
 }
 
+char *find_path(char *command){
+	char *paths = getenv("PATH"); // from GEMINI
+	char *path = strtok(paths, ":");
+
+	while (path!=NULL){
+		char *curr_path = malloc(sizeof(path)+sizeof(command)+2);
+		strcpy(curr_path, path);
+		strcat(curr_path, "/");
+		strcat(curr_path, command);
+		if (access(curr_path, F_OK)==0) { // from GEMINI
+			// printf("%s\n", curr_path);
+			return curr_path;
+		}
+		free(curr_path);
+		path = strtok(NULL, ":");
+	}
+
+}
+
 int process_command(struct command_t *command) {
   int r;
   if (strcmp(command->name, "") == 0)
@@ -336,7 +355,11 @@ int process_command(struct command_t *command) {
 
     // TODO: do your own exec with path resolving using execv()
     // do so by replacing the execvp call below
-    execvp(command->name, command->args); // exec+args+path
+
+    execv(find_path(command->name), command->args);
+    
+    //execvp(command->name, command->args); // exec+args+path
+
     printf("-%s: %s: command not found\n", sysname, command->name);
     exit(127);
   } else {
