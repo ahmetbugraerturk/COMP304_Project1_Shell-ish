@@ -311,7 +311,7 @@ char *find_path(char *command){
 	char *path = strtok(paths, ":");
 
 	while (path!=NULL){
-		char *curr_path = malloc(sizeof(path)+sizeof(command)+2);
+		char *curr_path = malloc(strlen(path)+strlen(command)+2);
 		if (curr_path==NULL) break;
 		strcpy(curr_path, path);
 		strcat(curr_path, "/");
@@ -360,10 +360,11 @@ int process_command(struct command_t *command) {
     // do so by replacing the execvp call below
 
     char *path = find_path(command->name);
+
     if (path!=NULL){
 	execv(path, command->args);
+	free(path);
     }
-    free(path);
     
     //execvp(command->name, command->args); // exec+args+path
 
@@ -371,7 +372,11 @@ int process_command(struct command_t *command) {
     exit(127);
   } else {
     // TODO: implement background processes here
-    wait(0); // wait for child process to finish
+    if (command->background) {
+	    printf("Background pid: [%d]\n", pid); 
+    } else {
+	    wait(0); // wait for child process to finish
+    }
     return SUCCESS;
   }
 }
