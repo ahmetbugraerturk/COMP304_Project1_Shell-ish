@@ -53,6 +53,7 @@ support:
 
 -   How to handle zombie processes for background processos?
 -   Why can't I write capital C in shell-ish? (._.)
+-   What should I do if ">" and ">>" both exist? I could handle it but idk if I should.
 
 # References
 
@@ -60,3 +61,5 @@ support:
   * Template and proofreadings of this README.md file.  
   * `getenv("PATH")`: to find the paths of commands.
   * `access(char *path, F_OK)`: it returns 0 if the path exists.  
+  * `dup2()` and `dup()` functions
+  * `fcntl.h` package
