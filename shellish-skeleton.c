@@ -5,7 +5,9 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <termios.h> // termios, TCSANOW, ECHO, ICANON
+#include <time.h>
 #include <unistd.h>
+#include <fcntl.h> // from Gemini
 const char *sysname = "shellish";
 
 enum return_codes {
@@ -306,6 +308,11 @@ int prompt(struct command_t *command) {
   return SUCCESS;
 }
 
+/**
+ * Find the path of the command
+ * @param  command  command whose path is being searched
+ * @return          the path of the command
+ */
 char *find_path(char *command){
 	char *paths = strdup(getenv("PATH")); // from GEMINI
 	char *path = strtok(paths, ":");
@@ -358,17 +365,62 @@ int process_command(struct command_t *command) {
 
     // TODO: do your own exec with path resolving using execv()
     // do so by replacing the execvp call below
+	
+    char* inputfile = command->redirects[0];
+    if (inputfile != NULL) {
+	int fd_i = open(inputfile, O_RDONLY); // from Gemini
+	dup2(fd_i, STDIN_FILENO); // from Gemini
+	close(fd_i);
+    } 
+    
+    char* appendfile = command->redirects[2];
+    if (appendfile != NULL) {
+	int fd_o = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644); // from Gemini
+	dup2(fd_o, STDOUT_FILENO); // from Gemini
+	close(fd_o);
+    }
+
+    char* outputfile = command->redirects[1];
+    if (outputfile != NULL) {
+	int fd_o = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644); // from Gemini
+	dup2(fd_o, STDOUT_FILENO); // from Gemini
+	close(fd_o);
+    } 
 
     char *path = find_path(command->name);
-
-    if (path!=NULL){
-	execv(path, command->args);
-	free(path);
-    }
     
+    if (appendfile!=NULL && outputfile!=NULL){ // this line works if ">" and ">>" are together.
+    	pid_t exectuting_pid = fork(); // my method appends the value in output file into append file after execution, so i need a new process
+    	if(exectuting_pid==0){
+    		if (path!=NULL){
+			execv(path, command->args);
+			free(path);
+    		}
+		printf("-%s: %s: command not found\n", sysname, command->name);
+    		exit(127);
+	} else{ // I have to do it in another process because in our main process codes after execv doesn't work
+		wait(NULL);
+		int fd_r = open(outputfile, O_RDONLY);
+		int fd_w = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		int r_byte;
+		char buffer[1024];
+		while ((r_byte = read(fd_r, buffer, sizeof(buffer))) > 0) { // from Gemini
+       		write(fd_w, buffer, r_byte);
+    		}
+		close(fd_r);
+		close(fd_w);
+    	}
+    } else {
+	if (path!=NULL){
+		execv(path, command->args);
+		free(path);
+    	}
+	printf("-%s: %s: command not found\n", sysname, command->name);
+    	exit(127);
+    }
     //execvp(command->name, command->args); // exec+args+path
 
-    printf("-%s: %s: command not found\n", sysname, command->name);
+    //printf("-%s: %s: command not found\n", sysname, command->name);
     exit(127);
   } else {
     // TODO: implement background processes here
