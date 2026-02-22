@@ -301,7 +301,7 @@ int prompt(struct command_t *command) {
 
   parse_command(buf, command);
 
-  // print_command(command); // DEBUG: uncomment for debugging
+  print_command(command); // DEBUG: uncomment for debugging
 
   // restore the old settings
   tcsetattr(STDIN_FILENO, TCSANOW, &backup_termios);
@@ -335,6 +335,96 @@ char *find_path(char *command){
 	return NULL;
 }
 
+void execute_command(struct command_t *command){
+    char* inputfile = command->redirects[0];
+    if (inputfile != NULL) {
+	int fd_i = open(inputfile, O_RDONLY); // from Gemini
+	dup2(fd_i, STDIN_FILENO); // from Gemini
+	close(fd_i);
+    } 
+    
+    char* appendfile = command->redirects[2];
+    if (appendfile != NULL) {
+	int fd_o = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644); // from Gemini
+	dup2(fd_o, STDOUT_FILENO); // from Gemini
+	close(fd_o);
+    }
+
+    char* outputfile = command->redirects[1];
+    if (outputfile != NULL) {
+	int fd_o = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644); // from Gemini
+	dup2(fd_o, STDOUT_FILENO); // from Gemini
+	close(fd_o);
+    } 
+
+
+
+    char *path = find_path(command->name);
+    
+    if (appendfile!=NULL && outputfile!=NULL){ // this line works if ">" and ">>" are together.
+    	pid_t exectuting_pid = fork(); // my method appends the value in output file into append file after execution, so i need a new process
+    	if(exectuting_pid==0){
+    		if (path!=NULL){
+			execv(path, command->args);
+			free(path);
+    		}
+		printf("-%s: %s: command not found\n", sysname, command->name);
+    		exit(127);
+	} else{ // I have to do it in another process because in our main process codes after execv doesn't work
+		wait(NULL); // I know this breaks the background process but I can't solve it with another way
+		int fd_r = open(outputfile, O_RDONLY);
+		int fd_w = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		int r_byte;
+		char buffer[1024];
+		while ((r_byte = read(fd_r, buffer, sizeof(buffer))) > 0) { // from Gemini
+       			write(fd_w, buffer, r_byte);
+    		}
+		close(fd_r);
+		close(fd_w);
+    	}
+    } else {
+	if (path!=NULL){
+		execv(path, command->args);
+		free(path);
+    	}
+	printf("-%s: %s: command not found\n", sysname, command->name);
+    	exit(127);
+    }
+    //execvp(command->name, command->args); // exec+args+path
+
+    //printf("-%s: %s: command not found\n", sysname, command->name);
+    exit(127);
+
+}
+
+int execute_pipeline(struct command_t *command){
+	if (command->next==NULL){
+		execute_command(command);
+	}
+
+	int fd[2];
+	if(pipe(fd) == -1){ // from unix-pipe.c example
+		fprintf(stderr,"Pipe failed");
+		return 1;
+	}
+
+	pid_t pid = fork();
+	printf("%d\n", pid);
+	if(pid==0){
+		dup2(fd[1], STDOUT_FILENO);
+		close(fd[0]);
+		close(fd[1]);
+		execute_command(command);
+	} else {
+		dup2(fd[0], STDIN_FILENO);
+		close(fd[0]);
+		close(fd[1]);
+		execute_pipeline(command->next);
+	}
+	return 0;
+
+}
+
 int process_command(struct command_t *command) {
   int r;
   if (strcmp(command->name, "") == 0)
@@ -365,63 +455,11 @@ int process_command(struct command_t *command) {
 
     // TODO: do your own exec with path resolving using execv()
     // do so by replacing the execvp call below
-	
-    char* inputfile = command->redirects[0];
-    if (inputfile != NULL) {
-	int fd_i = open(inputfile, O_RDONLY); // from Gemini
-	dup2(fd_i, STDIN_FILENO); // from Gemini
-	close(fd_i);
-    } 
-    
-    char* appendfile = command->redirects[2];
-    if (appendfile != NULL) {
-	int fd_o = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644); // from Gemini
-	dup2(fd_o, STDOUT_FILENO); // from Gemini
-	close(fd_o);
-    }
-
-    char* outputfile = command->redirects[1];
-    if (outputfile != NULL) {
-	int fd_o = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644); // from Gemini
-	dup2(fd_o, STDOUT_FILENO); // from Gemini
-	close(fd_o);
-    } 
-
-    char *path = find_path(command->name);
-    
-    if (appendfile!=NULL && outputfile!=NULL){ // this line works if ">" and ">>" are together.
-    	pid_t exectuting_pid = fork(); // my method appends the value in output file into append file after execution, so i need a new process
-    	if(exectuting_pid==0){
-    		if (path!=NULL){
-			execv(path, command->args);
-			free(path);
-    		}
-		printf("-%s: %s: command not found\n", sysname, command->name);
-    		exit(127);
-	} else{ // I have to do it in another process because in our main process codes after execv doesn't work
-		wait(NULL);
-		int fd_r = open(outputfile, O_RDONLY);
-		int fd_w = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
-		int r_byte;
-		char buffer[1024];
-		while ((r_byte = read(fd_r, buffer, sizeof(buffer))) > 0) { // from Gemini
-       		write(fd_w, buffer, r_byte);
-    		}
-		close(fd_r);
-		close(fd_w);
-    	}
+    if (command->next != NULL) {
+	execute_pipeline(command);
     } else {
-	if (path!=NULL){
-		execv(path, command->args);
-		free(path);
-    	}
-	printf("-%s: %s: command not found\n", sysname, command->name);
-    	exit(127);
+    	execute_command(command);	
     }
-    //execvp(command->name, command->args); // exec+args+path
-
-    //printf("-%s: %s: command not found\n", sysname, command->name);
-    exit(127);
   } else {
     // TODO: implement background processes here
     if (command->background) {

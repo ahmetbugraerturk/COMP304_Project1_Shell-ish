@@ -53,7 +53,8 @@ support:
 
 -   How to handle zombie processes for background processos?
 -   Why can't I write capital C in shell-ish? (._.)
--   What should I do if ">" and ">>" both exist? I could handle it but idk if I should.
+-   What should I do if ">" and ">>" both exist? I could handle it but idk if I should have. In my code, both of the operators work, but in the unix the last one should work, if I'm not mistaken. However, I can't handle the order of them. "|" can be considered for this question.
+-   I did the piping between parent and child instead of siblings. Is it a problem.
 
 # References
 
@@ -63,3 +64,5 @@ support:
   * `access(char *path, F_OK)`: it returns 0 if the path exists.  
   * `dup2()` and `dup()` functions
   * `fcntl.h` package
+* from unix-pipe.c example
+  * pipe codes.
