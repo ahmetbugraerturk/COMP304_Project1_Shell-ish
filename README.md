@@ -21,10 +21,10 @@ through piping.
 
 ## How to Build
 
-To compile the shell using `gcc`, run the following
+To compile the shell and new commands using `gcc`. A Makefile is also provided. Run the following
 command in your terminal:
 
-    gcc -o shell-ish shellish-skeleton.c
+    make
 
 ## How to Run
 
@@ -43,11 +43,15 @@ support:
 -   **Background Processes:** Append `&` to any command to execute it
     without blocking the shell.
 
+-   **Redirection:** Redirect the output of a command to a file.
+
+-   **Piping:** Pipe the output of one command to the input of another command.
+
 # TODO and Questions
 
 ## Remaining Tasks
 
--   I hope part 1 is done, I am still working on the other parts.
+-   I hope part 1 and 2 is done, I am still working on the part 3.
 
 ## Questions
 
@@ -64,5 +68,7 @@ support:
   * `access(char *path, F_OK)`: it returns 0 if the path exists.  
   * `dup2()` and `dup()` functions
   * `fcntl.h` package
+  * `atoi()` function
+  * `fgets()` function
 * from unix-pipe.c example
   * pipe codes.

@@ -338,56 +338,59 @@ char *find_path(char *command){
 void execute_command(struct command_t *command){
     char* inputfile = command->redirects[0];
     if (inputfile != NULL) {
-	int fd_i = open(inputfile, O_RDONLY); // from Gemini
-	dup2(fd_i, STDIN_FILENO); // from Gemini
-	close(fd_i);
+	    int fd_i = open(inputfile, O_RDONLY); // from Gemini
+	    dup2(fd_i, STDIN_FILENO); // from Gemini
+	    close(fd_i);
     } 
     
     char* appendfile = command->redirects[2];
     if (appendfile != NULL) {
-	int fd_o = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644); // from Gemini
-	dup2(fd_o, STDOUT_FILENO); // from Gemini
-	close(fd_o);
+	    int fd_o = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644); // from Gemini
+	    dup2(fd_o, STDOUT_FILENO); // from Gemini
+	    close(fd_o);
     }
 
     char* outputfile = command->redirects[1];
     if (outputfile != NULL) {
-	int fd_o = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644); // from Gemini
-	dup2(fd_o, STDOUT_FILENO); // from Gemini
-	close(fd_o);
+	    int fd_o = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644); // from Gemini
+	    dup2(fd_o, STDOUT_FILENO); // from Gemini
+	    close(fd_o);
     } 
 
+    char *path;
+    if (strcmp(command->name, "cut")==0){
+	    path = "./cut"; // to execute cut.c instead of built-in cut
+    } else {
+    	path = find_path(command->name);
+    }
 
-
-    char *path = find_path(command->name);
-    
     if (appendfile!=NULL && outputfile!=NULL){ // this line works if ">" and ">>" are together.
     	pid_t exectuting_pid = fork(); // my method appends the value in output file into append file after execution, so i need a new process
     	if(exectuting_pid==0){
     		if (path!=NULL){
-			execv(path, command->args);
-			free(path);
+			    execv(path, command->args);
+			    free(path);
     		}
-		printf("-%s: %s: command not found\n", sysname, command->name);
+		    printf("-%s: %s: command not found\n", sysname, command->name);
     		exit(127);
-	} else{ // I have to do it in another process because in our main process codes after execv doesn't work
-		wait(NULL); // I know this breaks the background process but I can't solve it with another way
-		int fd_r = open(outputfile, O_RDONLY);
-		int fd_w = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
-		int r_byte;
-		char buffer[1024];
-		while ((r_byte = read(fd_r, buffer, sizeof(buffer))) > 0) { // from Gemini
-       			write(fd_w, buffer, r_byte);
-    		}
-		close(fd_r);
-		close(fd_w);
+	    } else{ // I have to do it in another process because in our main process codes after execv doesn't work
+		    wait(NULL); // I know this breaks the background process but I can't solve it with another way
+		    int fd_r = open(outputfile, O_RDONLY);
+		    int fd_w = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		    int r_byte;
+		    char buffer[1024];
+        while ((r_byte = read(fd_r, buffer, sizeof(buffer))) > 0) { // from Gemini
+            write(fd_w, buffer, r_byte);
+        }
+        close(fd_r);
+        close(fd_w);
     	}
     } else {
-	if (path!=NULL){
-		execv(path, command->args);
-		free(path);
+	    if (path!=NULL){
+		    execv(path, command->args);
+		    free(path);
     	}
-	printf("-%s: %s: command not found\n", sysname, command->name);
+	    printf("-%s: %s: command not found\n", sysname, command->name);
     	exit(127);
     }
     //execvp(command->name, command->args); // exec+args+path
@@ -409,7 +412,6 @@ int execute_pipeline(struct command_t *command){
 	}
 
 	pid_t pid = fork();
-	printf("%d\n", pid);
 	if(pid==0){
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[0]);
@@ -456,7 +458,7 @@ int process_command(struct command_t *command) {
     // TODO: do your own exec with path resolving using execv()
     // do so by replacing the execvp call below
     if (command->next != NULL) {
-	execute_pipeline(command);
+	    execute_pipeline(command);
     } else {
     	execute_command(command);	
     }
