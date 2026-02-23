@@ -51,7 +51,7 @@ support:
 
 ## Remaining Tasks
 
--   I hope part 1 and 2 is done, I am still working on the part 3.
+-   I hope part 1, 2 and first 2 commands of part 3 are done, I am still working on the custom command of part 3.
 
 ## Questions
 
@@ -70,5 +70,13 @@ support:
   * `fcntl.h` package
   * `atoi()` function
   * `fgets()` function
+  * `waitpid()` function
+  * `WNOHANG` also from TA
+  * `mkfifo()` and `mkdir()` permissions
+  * `dirent.h` package
+  * `fflush()` function
 * from unix-pipe.c example
   * pipe codes.
+* from named-pipes-writes-first.c example
+  * named pipe codes.
+

@@ -41,6 +41,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    if (fc == 0){
+        fprintf(stderr, "cut: you must specify a list of fields\n"); // derived from the original output of cut
+        return 1;
+    }
+
     // Read from stdin and process each line
     char buffer[MAX_BUFFER];
     while (fgets(buffer, sizeof(buffer), stdin)) { // from Gemini

@@ -14,7 +14,7 @@ $(CUT_EXEC): $(CUT_EXEC).c
 	$(CC) $(CFLAGS) -o $(CUT_EXEC) $(CUT_EXEC).c
 
 $(CHAT_EXEC): $(CHAT_EXEC).c
-	$(CC) $(CFLAGS) -o $(CHAT_EXEC) $(CHAT_EXEC).c
+	$(CC) $(CFLAGS) -o $(CHAT_EXEC) $(CHAT_EXEC).c -lrt
 
 clean:
 	rm -f $(SHELL_EXEC) $(CUT_EXEC) $(CHAT_EXEC)

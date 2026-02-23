@@ -308,6 +308,15 @@ int prompt(struct command_t *command) {
   return SUCCESS;
 }
 
+// from Gemini as a suggestion from TA
+void wnohang() {
+    int status;
+    pid_t finished_pid;
+    while ((finished_pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        printf("\n[Process %d finished]\n", finished_pid);
+    }
+}
+
 /**
  * Find the path of the command
  * @param  command  command whose path is being searched
@@ -342,6 +351,13 @@ void execute_command(struct command_t *command){
 	    dup2(fd_i, STDIN_FILENO); // from Gemini
 	    close(fd_i);
     } 
+
+    char* outputfile = command->redirects[1];
+    if (outputfile != NULL) {
+	    int fd_o = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644); // from Gemini
+	    dup2(fd_o, STDOUT_FILENO); // from Gemini
+	    close(fd_o);
+    } 
     
     char* appendfile = command->redirects[2];
     if (appendfile != NULL) {
@@ -350,54 +366,21 @@ void execute_command(struct command_t *command){
 	    close(fd_o);
     }
 
-    char* outputfile = command->redirects[1];
-    if (outputfile != NULL) {
-	    int fd_o = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644); // from Gemini
-	    dup2(fd_o, STDOUT_FILENO); // from Gemini
-	    close(fd_o);
-    } 
-
     char *path;
     if (strcmp(command->name, "cut")==0){
 	    path = "./cut"; // to execute cut.c instead of built-in cut
+    } else if (strcmp(command->name, "chatroom")==0){
+	    path = "./chatroom"; // to execute chatroom.c instead of built-in chatroom
     } else {
     	path = find_path(command->name);
     }
 
-    if (appendfile!=NULL && outputfile!=NULL){ // this line works if ">" and ">>" are together.
-    	pid_t exectuting_pid = fork(); // my method appends the value in output file into append file after execution, so i need a new process
-    	if(exectuting_pid==0){
-    		if (path!=NULL){
-			    execv(path, command->args);
-			    free(path);
-    		}
-		    printf("-%s: %s: command not found\n", sysname, command->name);
-    		exit(127);
-	    } else{ // I have to do it in another process because in our main process codes after execv doesn't work
-		    wait(NULL); // I know this breaks the background process but I can't solve it with another way
-		    int fd_r = open(outputfile, O_RDONLY);
-		    int fd_w = open(appendfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
-		    int r_byte;
-		    char buffer[1024];
-        while ((r_byte = read(fd_r, buffer, sizeof(buffer))) > 0) { // from Gemini
-            write(fd_w, buffer, r_byte);
-        }
-        close(fd_r);
-        close(fd_w);
-    	}
-    } else {
-	    if (path!=NULL){
-		    execv(path, command->args);
-		    free(path);
-    	}
-	    printf("-%s: %s: command not found\n", sysname, command->name);
-    	exit(127);
+    if (path!=NULL){
+      execv(path, command->args);
+      free(path);
     }
-    //execvp(command->name, command->args); // exec+args+path
-
-    //printf("-%s: %s: command not found\n", sysname, command->name);
+    printf("-%s: %s: command not found\n", sysname, command->name);
     exit(127);
-
 }
 
 int execute_pipeline(struct command_t *command){
@@ -447,14 +430,6 @@ int process_command(struct command_t *command) {
   pid_t pid = fork();
   if (pid == 0) // child
   {
-    /// This shows how to do exec with environ (but is not available on MacOs)
-    // extern char** environ; // environment variables
-    // execvpe(command->name, command->args, environ); // exec+args+path+environ
-
-    /// This shows how to do exec with auto-path resolve
-    // add a NULL argument to the end of args, and the name to the beginning
-    // as required by exec
-
     // TODO: do your own exec with path resolving using execv()
     // do so by replacing the execvp call below
     if (command->next != NULL) {
@@ -467,7 +442,8 @@ int process_command(struct command_t *command) {
     if (command->background) {
 	    printf("Background pid: [%d]\n", pid); 
     } else {
-	    wait(0); // wait for child process to finish
+	    int status;
+      waitpid(pid, &status, 0); // wait for child process to finish
     }
     return SUCCESS;
   }
@@ -475,6 +451,7 @@ int process_command(struct command_t *command) {
 
 int main() {
   while (1) {
+    wnohang(); // from Gemini as a suggestion from TA
     struct command_t *command =
         (struct command_t *)malloc(sizeof(struct command_t));
     memset(command, 0, sizeof(struct command_t)); // set all bytes to 0
