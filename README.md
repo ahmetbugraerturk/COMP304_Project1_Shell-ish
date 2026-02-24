@@ -75,6 +75,8 @@ support:
   * `mkfifo()` and `mkdir()` permissions
   * `dirent.h` package
   * `fflush()` function
+  * hangman stages
+  * hangman lost and won messages
 * from unix-pipe.c example
   * pipe codes.
 * from named-pipes-writes-first.c example

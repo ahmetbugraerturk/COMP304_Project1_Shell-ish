@@ -301,7 +301,7 @@ int prompt(struct command_t *command) {
 
   parse_command(buf, command);
 
-  print_command(command); // DEBUG: uncomment for debugging
+  // print_command(command); // DEBUG: uncomment for debugging
 
   // restore the old settings
   tcsetattr(STDIN_FILENO, TCSANOW, &backup_termios);
@@ -371,6 +371,8 @@ void execute_command(struct command_t *command){
 	    path = "./cut"; // to execute cut.c instead of built-in cut
     } else if (strcmp(command->name, "chatroom")==0){
 	    path = "./chatroom"; // to execute chatroom.c instead of built-in chatroom
+    } else if (strcmp(command->name, "hangman")==0){
+	    path = "./hangman"; // to execute hangman.c instead of built-in hangman
     } else {
     	path = find_path(command->name);
     }

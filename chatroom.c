@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     }
 
     char dir_path[100];
-    strcpy(dir_path, "./tmp/chatrooms-"); // replace it with /tmp/chatrooms- before submission
+    strcpy(dir_path, "/tmp/chatrooms-");
     strcat(dir_path, argv[1]);
     if(access(dir_path, F_OK) == -1){
         mkdir(dir_path, 0777);
