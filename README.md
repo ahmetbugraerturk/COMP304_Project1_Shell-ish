@@ -43,17 +43,37 @@ support:
 -   **Background Processes:** Append `&` to any command to execute it
     without blocking the shell.
 
+    <div style="display: flex; gap: 10px;">
+      <img src="./imgs/part1-background-1.png" alt="Background 1" width="400">
+      <img src="./imgs/part1-background-2.png" alt="Background 2" width="400">
+    </div>
+
 -   **Redirection:** Redirect the output of a command to a file.
 
+    <img src="./imgs/part2-redirections.png" alt="Redirections" width="500">
+
 -   **Piping:** Pipe the output of one command to the input of another command.
+
+    <img src="./imgs/part2-piping.png" alt="piping" width="500">
 
 -   **cut command:** A custom command that implements the functionality of the cut command.
     * Usage: `cut -d <delimiter> -f<field_number>`
     * Example: `cut -d ":" -f1,6`
+ 
+    <div style="display: flex; gap: 10px;">
+      <img src="./imgs/part3-cut-1.png" alt="Cut 1" width="400">
+      <img src="./imgs/part3-cut-2.png" alt="Cut 2" width="400">
+    </div>
 
 -   **chatroom command:** A custom command that allows users to chat with each other  using named pipes.
     * Usage: `chatroom <room_name> <user_name>`
     * Example: `chatroom comp304 bugra`
+ 
+    <div style="display: flex; gap: 10px;">
+      <img src="./imgs/part3-chatroom-1.png" alt="Chatroom 1" width="300">
+      <img src="./imgs/part3-chatroom-2.png" alt="Chatroom 2" width="300">
+      <img src="./imgs/part3-chatroom-3.png" alt="Chatroom 3" width="300">
+    </div>
 
 -   ***hangman command (my custom command):*** A custom command that allows two users to play hangman with each other using named pipes.
     * Usage: `hangman -m` (moderator) or `hangman -p` (player)
@@ -63,10 +83,23 @@ support:
     * How to play:
         1. Open two terminals.
         2. In the first terminal, run `hangman -m`.
+           
+           <img src="./imgs/part3-hangman(custom)-1.png" alt="Hangman 1" width="400">
         3. In the second terminal, run `hangman -p`.
-        4. The moderator will enter a word, and this process will terminated.
+     
+           <img src="./imgs/part3-hangman(custom)-2.png" alt="Hangman 2" width="400">
+        4. The moderator will enter a word, and this process will terminated. The game starts at the players screen.
+     
+           <img src="./imgs/part3-hangman(custom)-3.png" alt="Hangman 3" width="400">
         5. The player will guess letters one by one.
+     
+           <img src="./imgs/part3-hangman(custom)-4.png" alt="Hangman 4" width="400">
         6. The game ends when the player guesses the word or runs out of lives.
+
+           <div style="display: flex; gap: 10px;">
+              <img src="./imgs/part3-hangman(custom)-5.png" alt="Hangman 5" width="400">
+              <img src="./imgs/part3-hangman(custom)-6.png" alt="Hangman 6" width="400">
+           </div>
 
 # References
 
