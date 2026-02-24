@@ -47,22 +47,30 @@ support:
 
 -   **Piping:** Pipe the output of one command to the input of another command.
 
-# TODO and Questions
+-   **cut command:** A custom command that implements the functionality of the cut command.
+    * Usage: `cut -d <delimiter> -f<field_number>`
+    * Example: `cut -d ":" -f1,6`
 
-## Remaining Tasks
+-   **chatroom command:** A custom command that allows users to chat with each other  using named pipes.
+    * Usage: `chatroom <room_name> <user_name>`
+    * Example: `chatroom comp304 bugra`
 
--   I hope part 1, 2 and first 2 commands of part 3 are done, I am still working on the custom command of part 3.
+-   ***hangman command (my custom command):*** A custom command that allows two users to play hangman with each other using named pipes.
+    * Usage: `hangman -m` (moderator) or `hangman -p` (player)
 
-## Questions
+    * Named pipe is created in /tmp/hangman/fifo for communication between moderator and player.
 
--   How to handle zombie processes for background processos?
--   Why can't I write capital C in shell-ish? (._.)
--   What should I do if ">" and ">>" both exist? I could handle it but idk if I should have. In my code, both of the operators work, but in the unix the last one should work, if I'm not mistaken. However, I can't handle the order of them. "|" can be considered for this question.
--   I did the piping between parent and child instead of siblings. Is it a problem.
+    * How to play:
+        1. Open two terminals.
+        2. In the first terminal, run `hangman -m`.
+        3. In the second terminal, run `hangman -p`.
+        4. The moderator will enter a word, and this process will terminated.
+        5. The player will guess letters one by one.
+        6. The game ends when the player guesses the word or runs out of lives.
 
 # References
 
-* from Gemini:
+* Gemini helps me about the usage of aboves:
   * Template and proofreadings of this README.md file.  
   * `getenv("PATH")`: to find the paths of commands.
   * `access(char *path, F_OK)`: it returns 0 if the path exists.  
@@ -71,14 +79,14 @@ support:
   * `atoi()` function
   * `fgets()` function
   * `waitpid()` function
-  * `WNOHANG` also from TA
+  * `WNOHANG` as a suggestion from TA
   * `mkfifo()` and `mkdir()` permissions
   * `dirent.h` package
   * `fflush()` function
   * hangman stages
   * hangman lost and won messages
-* from unix-pipe.c example
+* unix-pipe.c example
   * pipe codes.
-* from named-pipes-writes-first.c example
+* named-pipes-writes-first.c example
   * named pipe codes.
 

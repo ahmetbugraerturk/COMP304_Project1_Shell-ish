@@ -333,7 +333,6 @@ char *find_path(char *command){
 		strcat(curr_path, "/");
 		strcat(curr_path, command);
 		if (access(curr_path, F_OK)==0) { // from GEMINI
-			// printf("%s\n", curr_path);
 			free(paths);
 			return curr_path;
 		}

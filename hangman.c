@@ -202,7 +202,16 @@ int main(int argc, char *argv[]) {
         close(fd);
 
     } else if (strcmp(argv[1], "-p") == 0){
+        char *dir_path = "/tmp/hangman";
+        if(access(dir_path, F_OK) == -1){
+            mkdir(dir_path, 0777);
+        }
+
         char *fifo_path = "/tmp/hangman/fifo";
+        if(access(fifo_path, F_OK) == -1){
+            mkfifo(fifo_path, 0666); // from named-pipes-writes-first.c example
+        }
+        
         int fd = open(fifo_path, O_RDONLY);
         char word[MAX_WORD_LEN];
         int r_byte;
